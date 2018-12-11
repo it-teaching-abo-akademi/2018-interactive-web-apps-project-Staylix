@@ -1,0 +1,281 @@
+body {
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
+    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
+    sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+    font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
+    monospace;
+}
+
+.App-logo {
+    animation: App-logo-spin infinite 2s linear;
+    height: 40vmin;
+}
+
+@keyframes App-logo-spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@light_text: #282c34;
+@light_background: white;
+
+@dark_text: white;
+@dark_background: #282c34;
+
+//@accent: #ff1744;
+//@accent: #0097a7;
+@accent: #f50057;
+
+
+.header {
+    background-color: #282c34;
+    text-align: center;
+    align-items: center;
+    justify-content: center;
+    font-size: calc(10px + 2vmin);
+    color: white;
+    padding: 20px;
+}
+
+.footer {
+    .header;
+    margin-top: 80px;
+}
+
+.myBtn {
+    height: 40px;
+    border-radius: 50px;
+    margin: 0 5px;
+    padding: 0 15px 6px;
+    display: inline-block;
+    vertical-align: middle;
+    text-align: center;
+    border: 2px solid @dark_background;
+    transition-duration: 0.3s;
+
+    span {
+        display: inline-block;
+        vertical-align: middle;
+    }
+
+    i {
+        position: relative;
+        top: 6px;
+        left: 6%;
+        box-sizing: border-box;
+        display: inline-block;
+    }
+}
+
+.myBtn-light {
+    .myBtn;
+    border: 2px solid @accent;
+    background-color: @light_text;
+    color: @accent;
+
+    &:hover {
+        border: 2px solid @accent;
+        background-color: @accent;
+        color: @light_text;
+    }
+}
+
+.myBtn-dark {
+    .myBtn;
+    border: 2px solid @accent;
+    background-color: @dark_text;
+    color: @accent;
+
+    &:hover {
+        border: 2px solid @accent;
+        background-color: @accent;
+        color: @dark_text;
+    }
+}
+
+.logo {
+    height: 23px;
+    width: 23px;
+    margin-right: 8px;
+}
+
+.portfolio {
+    background-color: @dark_background;
+    color: @dark_text;
+    border-radius: 22px;
+    padding: 40px;
+    margin: 20px;
+}
+
+.form-control {
+    border: 2px solid @dark_background;
+    border-radius: 50px;
+    height: 40px;
+    transition-duration: 0.4s;
+    transition-timing-function: ease-out;
+
+    &:focus {
+        -webkit-box-shadow: none;
+        box-shadow: 2px @accent;
+        border: 2px solid @accent;
+    }
+}
+
+label {
+    margin-right: 5px;
+}
+
+a {
+    color: @accent;
+
+    &:hover {
+        color: @accent;
+    }
+}
+
+.accentuated {
+    color: @accent;
+}
+
+input:-webkit-autofill {
+    -webkit-box-shadow: 0 0 0 1000px white inset !important;
+}
+
+.centered {
+    text-align: center;
+}
+
+/* CSS for the switch button */
+.switch {
+    height: 40px;
+    width: 80px;
+    border-radius: 30px;
+    background-color: @light_background;
+    border: 3px solid @light_background;
+    text-align: center;
+    align-items: center;
+    overflow: hidden;
+    float: right;
+    transition-duration: 0.35s;
+
+    &:hover {
+        cursor: pointer;
+        border: 3px solid @accent;
+    }
+
+    .switchItem {
+        display: inline-block;
+        width: 50%;
+        height: 100%;
+        padding-top: 5px;
+    }
+
+    .switchActive {
+        .switchItem;
+        animation: switchActivation 0.6s forwards;
+    }
+
+    .switchDisabled {
+        .switchItem;
+        animation: switchDisabling 0.6s forwards;
+    }
+}
+
+@keyframes switchActivation {
+    from {
+        background-color: @light_background;
+        color: @accent;
+    }
+    to {
+        background-color: @accent;
+        color: @light_background;
+    }
+}
+
+@keyframes switchDisabling {
+    from {
+        background-color: @accent;
+        color: @light_background;
+    }
+    to {
+        background-color: @light_background;
+        color: @accent;
+    }
+}
+
+
+/* Thanks to loading.io. This code comes from an open source library: https://loading.io/css/ */
+.lds-ellipsis {
+    display: inline-block;
+    position: relative;
+    width: 64px;
+    height: 16px;
+}
+
+.lds-ellipsis div {
+    position: absolute;
+    top: 3px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: @accent;
+    animation-timing-function: cubic-bezier(0, 1, 1, 0);
+}
+
+.lds-ellipsis div:nth-child(1) {
+    left: 6px;
+    animation: lds-ellipsis1 0.6s infinite;
+}
+
+.lds-ellipsis div:nth-child(2) {
+    left: 6px;
+    animation: lds-ellipsis2 0.6s infinite;
+}
+
+.lds-ellipsis div:nth-child(3) {
+    left: 26px;
+    animation: lds-ellipsis2 0.6s infinite;
+}
+
+.lds-ellipsis div:nth-child(4) {
+    left: 45px;
+    animation: lds-ellipsis3 0.6s infinite;
+}
+
+@keyframes lds-ellipsis1 {
+    0% {
+        transform: scale(0);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+@keyframes lds-ellipsis3 {
+    0% {
+        transform: scale(1);
+    }
+    100% {
+        transform: scale(0);
+    }
+}
+
+@keyframes lds-ellipsis2 {
+    0% {
+        transform: translate(0, 0);
+    }
+    100% {
+        transform: translate(19px, 0);
+    }
+}
