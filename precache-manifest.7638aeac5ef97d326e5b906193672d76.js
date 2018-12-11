@@ -16,7 +16,7 @@ self.__precacheManifest = [
     "url": "/spms2/static/js/1.150005d2.chunk.js"
   },
   {
-    "revision": "eb419871bdae83677ebaa05c2eee7043",
+    "revision": "f83cc13408e54ebe9e5c8df566d62c89",
     "url": "/spms2/index.html"
   }
 ];
