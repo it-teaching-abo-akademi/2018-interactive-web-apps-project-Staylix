@@ -1,7 +1,10 @@
 import React, {Component} from 'react';
-
 import logo from './logo.svg';
-
+//import LineChart from 'react-chartjs';
+//import BarChart from 'react-chartjs';
+import {Bar, Line} from 'react-chartjs-2';
+//var BarChart = require("react-chartjs").Bar;
+//var BarChart = require("react-chartjs").Bar;
 
 /* This part manage URLs for requests */
 const apiKeyCurrency = "0ZHUEM2KZK605UBO";
@@ -14,16 +17,31 @@ function uriQuote(symbol) {
     return baseUrl + "stock/" + encodeURI(symbol) + "/quote";
 }
 
+function uriChart(symbolList, range) {
+    let symbols = "";
+    for (let i = 0; i < symbolList.length; i++) {
+        if (i > 0)
+            symbols += ',';
+        symbols += symbolList[i].symbol;
+    }
+    let url = baseUrl + "stock/market/batch?types=chart&symbols=" + encodeURI(symbols);
+    return url + "&range=" + range + "&chartInterval=1";
+}
+
 function uriLogo(symbol) {
     return baseUrl + "stock/" + encodeURI(symbol) + "/logo";
 }
+
+/* The color palette for charts */
+const colors = ["#537c8e", "#2ebdbd", "#ceae7f", "#85583f", "#847370", "#de9396", "#b94a59", "#6a0a29", "#423c6d", "#7a839e", "#94b5c2", "#eadcc1"];
+const colorsBackground = ["#537c8e44", "#2ebdbd44", "#ceae7f44", "#85583f44", "#84737044", "#de939644", "#b94a5944", "#6a0a2944", "#423c6d44", "#7a839e44", "#94b5c244", "#eadcc144"];
 
 /* Button with icon component */
 class Button extends Component {
     render() {
         return (
             <button className={this.props.classes} onClick={this.props.action} type={this.props.type}>
-                <span>{this.props.content}<i className="material-icons">{this.props.icon}</i></span>
+                <span><b>{this.props.content}</b><i className="material-icons">{this.props.icon}</i></span>
             </button>
         );
     }
@@ -127,43 +145,45 @@ class PortfolioList extends Component {
     constructor(props) {
         super(props);
 
-        this.state = {portfolios: [], currencyRate: 0};
+        this.state = {
+            portfolios: {},
+            currencyRate: 0,
+            showChart: false,
+            stocksChart: [],
+            labelsChart: [],
+            datasetsChart: [],
+            range: "1d",
+        };
 
         this.addPortfolio = this.addPortfolio.bind(this);
         this.removePortfolio = this.removePortfolio.bind(this);
         this.addStock = this.addStock.bind(this);
-        this.removeStock = this.removeStock.bind(this);
+        this.removeSelectedStocks = this.removeSelectedStocks.bind(this);
         this.changeCurrency = this.changeCurrency.bind(this);
         this.addCheckedStock = this.addCheckedStock.bind(this);
         this.getCurrencyExchangeRate = this.getCurrencyExchangeRate.bind(this);
+        this.changeSelectState = this.changeSelectState.bind(this);
+        this.showChart = this.showChart.bind(this);
+        this.hideModal = this.hideModal.bind(this);
     }
 
     addPortfolio(name) {
         let portfolios = this.state.portfolios;
-        let nameAlreadyUsed = false;
-        portfolios.forEach(function (portfolio) {
-            if (portfolio.name === name) {
-                nameAlreadyUsed = true;
-            }
-        });
         if (portfolios.length >= 10)
             alert('You cannot have more than 10 portfolios.');
         else if (name.length < 1)
             alert('Please choose a name.');
-        else if (nameAlreadyUsed)
+        else if (name in portfolios)
             alert('This portfolio name is already used.');
-        else
-            portfolios.push({name: name, stocks: [], currency: "EUR"});
+        else {
+            portfolios[name] = {name: name, stocks: [], currency: "EUR"};
+        }
         this.setState({portfolios: portfolios});
     }
 
     removePortfolio(portfolioName) {
         let portfolios = this.state.portfolios;
-        portfolios.forEach(function (portfolio, index) {
-            if (portfolio.name === portfolioName) {
-                portfolios.splice(index, 1);
-            }
-        });
+        delete portfolios[portfolioName];
         this.setState({portfolios: portfolios});
     }
 
@@ -195,36 +215,39 @@ class PortfolioList extends Component {
 
     // This function is called only if the symbol is validated.
     addCheckedStock(portfolios, portfolioName, stock) {
-        portfolios.forEach(function (portfolio) {
-            if (portfolio.name === portfolioName) {
-                if (portfolio.stocks.length >= 50)
-                    alert('You cannot have more than 10 portfolios.');
-                else {
-                    let symbolAlreadyAdded = false;
-                    portfolio.stocks.forEach(function (stk) {
-                        if (stk.symbol === stock.symbol) {
-                            symbolAlreadyAdded = true;
-                        }
-                    });
-                    if (symbolAlreadyAdded)
-                        alert('This symbol is already added.');
-                    else
-                        portfolio.stocks.push(stock);
+        if (portfolios[portfolioName].stocks.length >= 50)
+            alert('You cannot have more than 50 stocks.');
+        else {
+            let symbolAlreadyAdded = false;
+            portfolios[portfolioName].stocks.forEach(function (stk) {
+                if (stk.symbol === stock.symbol) {
+                    symbolAlreadyAdded = true;
                 }
+            });
+            if (symbolAlreadyAdded)
+                alert('This symbol is already added.');
+            else
+                portfolios[portfolioName].stocks.push(stock);
+        }
+        this.setState({portfolios: portfolios});
+    }
+
+    // Remove all the selected stocks on the passed portfolio
+    removeSelectedStocks(portfolioName) {
+        let portfolios = this.state.portfolios;
+        portfolios[portfolioName].stocks.forEach(function (stock, index) {
+            if (stock.selected) {
+                portfolios[portfolioName].stocks.splice(index, 1);
             }
         });
         this.setState({portfolios: portfolios});
     }
 
-    removeStock(portfolioName, stockSymbol) {
+    changeSelectState(portfolioName, stockSymbol) {
         let portfolios = this.state.portfolios;
-        portfolios.forEach(function (portfolio) {
-            if (portfolio.name === portfolioName) {
-                portfolios.stocks.forEach(function (stock, index) {
-                    if (stock.symbol === stockSymbol) {
-                        portfolios.stocks.splice(index, 1);
-                    }
-                });
+        portfolios[portfolioName].stocks.forEach(function (stock) {
+            if (stock.symbol === stockSymbol) {
+                stock.selected = !stock.selected;
             }
         });
         this.setState({portfolios: portfolios});
@@ -233,15 +256,11 @@ class PortfolioList extends Component {
     // This method change the currency of a portfolio and keep it in its state
     changeCurrency(portfolioName) {
         let portfolios = this.state.portfolios;
-        portfolios.forEach(function (portfolio) {
-            if (portfolio.name === portfolioName) {
-                if (portfolio.currency === "EUR")
-                    portfolio.currency = "USD";
-                else {
-                    portfolio.currency = "EUR";
-                }
-            }
-        });
+        if (portfolios[portfolioName].currency === "EUR")
+            portfolios[portfolioName].currency = "USD";
+        else {
+            portfolios[portfolioName].currency = "EUR";
+        }
         this.setState({portfolios: portfolios});
     }
 
@@ -264,13 +283,73 @@ class PortfolioList extends Component {
             );
     }
 
+    // To show the modal with the chart
+    showChart(portfolioName) {
+        let stocks = this.state.portfolios[portfolioName].stocks.filter(stock => stock.selected);
+        if (stocks.length < 1) {
+            alert("Select at least one stock.");
+            return;
+        }
+        this.setState({
+            showChart: true,
+            stocksChart: stocks,
+        });
+        let labels = [];
+        let datasets = [];
+        let url = uriChart(stocks, this.state.range);
+        fetch(url)
+            .then(res => res.json())
+            .then(
+                (result) => {
+                    if (result === {})
+                        alert('Impossible to fetch data.');
+                    else {
+                        labels = Object.values(Object.values(result)[0].chart).map((value) => {
+                            return (value.label)
+                        });
+                        for (let key in Object.keys(result)) {
+                            let symbol = Object.keys(result)[key]; // Don't understand why, but it works
+                            let data = Object.values(result[symbol].chart).map((value) => {
+                                return (value.close)
+                            });
+                            let colorNumber = Math.floor(Math.random() * colors.length);
+                            datasets.push({
+                                label: symbol,
+                                data: data,
+                                borderColor: colors[colorNumber],
+                                backgroundColor: colorsBackground[colorNumber],
+                                spanGaps: true
+                            })
+                        }
+                        this.setState({
+                            labelsChart: labels,
+                            datasetsChart: datasets
+                        });
+                    }
+                }
+                ,
+                (error) => {
+                    alert('Impossible to fetch data.');
+                    this.setState({
+                        error
+                    });
+                }
+            );
+    }
+
+// To hide the modal
+    hideModal() {
+        this.setState({showChart: false})
+    }
+
     componentDidMount() {
+        // We call this function only at the loading of the page, to get the exchange rate between EUR and USD
         this.getCurrencyExchangeRate();
 
         // Load portfolios from local storage
         let portfoliosFromStorage = JSON.parse(localStorage.getItem("portfolios"));
         if (typeof portfoliosFromStorage === 'undefined' || portfoliosFromStorage === null)
-            portfoliosFromStorage = [];
+            portfoliosFromStorage = {};
         this.setState({portfolios: portfoliosFromStorage});
 
         window.addEventListener(
@@ -294,17 +373,30 @@ class PortfolioList extends Component {
     }
 
     render() {
-        let listPortfolios = this.state.portfolios.map((portfolio) =>
-            <Portfolio key={portfolio.name}
-                       name={portfolio.name}
-                       stocks={portfolio.stocks}
-                       currency={portfolio.currency}
+        let keys = Object.keys(this.state.portfolios);
+        let portfolios = this.state.portfolios;
+        let listPortfolios = keys.map((portfolioName) =>
+            <Portfolio key={portfolios[portfolioName].name}
+                       name={portfolios[portfolioName].name}
+                       stocks={portfolios[portfolioName].stocks}
+                       currency={portfolios[portfolioName].currency}
                        currencyRate={this.state.currencyRate}
                        removePortfolio={this.removePortfolio}
                        addStock={this.addStock}
-                       removeStock={this.removeStock}
-                       changeCurrency={this.changeCurrency}/>);
-
+                       removeSelectedStocks={this.removeSelectedStocks}
+                       changeCurrency={this.changeCurrency}
+                       changeSelectState={this.changeSelectState}
+                       showChart={this.showChart}
+            />);
+        let leftPortfolios = [];
+        let rightPortfolios = [];
+        for (let i = 0; i < listPortfolios.length; ++i) {
+            if (i % 2 === 0)
+                leftPortfolios.unshift(listPortfolios[i]);
+            else
+                rightPortfolios.unshift(listPortfolios[i]);
+        }
+        console.log(this.state.datasetsChart);
         return (
             <div>
                 <div className="centered">
@@ -314,9 +406,19 @@ class PortfolioList extends Component {
                                      buttonContent={"Add new Portfolio"}
                                      buttonClass={"myBtn-dark"}/>
                 </div>
-
-                {listPortfolios}
-
+                <Modal hideModal={this.hideModal}
+                       labels={this.state.labelsChart}
+                       datasets={this.state.datasetsChart}
+                       shown={this.state.showChart}
+                />
+                <div className="row mt-4">
+                    <div className="col-12 col-lg-6 px-3">
+                        {leftPortfolios}
+                    </div>
+                    <div className="col-12 col-lg-6 px-3">
+                        {rightPortfolios}
+                    </div>
+                </div>
             </div>
         );
     }
@@ -328,6 +430,7 @@ class Portfolio extends Component {
 
         this.callAddStock = this.callAddStock.bind(this);
         this.callChangeCurrency = this.callChangeCurrency.bind(this);
+        this.callChangeSelectState = this.callChangeSelectState.bind(this);
     }
 
     callAddStock(state) {
@@ -339,21 +442,28 @@ class Portfolio extends Component {
         this.props.changeCurrency(this.props.name);
     }
 
+    callChangeSelectState(stockSymbol) {
+        this.props.changeSelectState(this.props.name, stockSymbol)
+    }
+
     render() {
         let listStocks = this.props.stocks.map((stock) =>
             <Stock key={stock.symbol}
                    symbol={stock.symbol}
                    shares={stock.shares}
+                   selected={stock.selected}
                    currency={this.props.currency}
-                   removeStock={this.props.removeStock}
                    currencyRate={this.props.currencyRate}
+                   changeSelectState={this.callChangeSelectState}
             />);
 
         return (
-            <div className="portfolio">
+            <div className="portfolio mb-4 animated fadeIn slow">
                 <div className="row">
                     <div className="col-8">
                         <h1>{this.props.name}</h1>
+                        <Button classes={"myBtn-light"} content={"Remove Portfolio"} icon={"delete_outline"}
+                                action={this.props.removePortfolio.bind(this, this.props.name)}/>
                     </div>
                     <div className="col-4">
                         <Switch currency={this.props.currency}
@@ -380,10 +490,30 @@ class Portfolio extends Component {
                     </tbody>
                 </table>
                 <div className="centered">
-                    <Button classes={"myBtn-light"} content={"Remove Portfolio"} icon={"delete_outline"}
-                            action={this.props.removePortfolio.bind(this, this.props.name)}/>
+                    <Button classes={"myBtn-light"} content={"Remove Selected Stocks"} icon={"delete_outline"}
+                            action={this.props.removeSelectedStocks.bind(this, this.props.name)}/>
+                    <Button classes={"myBtn-light"} content={"Show Chart"} icon={"insert_chart_outlined"}
+                            action={this.props.showChart.bind(this, this.props.name)}/>
                 </div>
+            </div>
+        );
+    }
+}
 
+class Modal extends Component {
+    render() {
+        let data = {
+            labels: this.props.labels,
+            datasets: this.props.datasets
+        };
+        console.log(data);
+        let options = {}; //{scales: {yAxes: [{ticks: {beginAtZero: true}}]}};
+        return (
+            <div className={this.props.shown ? "modal" : "modal hide"}>
+                <div className="modal-content">
+                    <i className="material-icons" onClick={this.props.hideModal}>cancel</i>
+                    <Line data={data} options={options}/>
+                </div>
             </div>
         );
     }
@@ -407,15 +537,9 @@ class Stock extends Component {
             logoLoaded: false,
             price: 0
         };
-        //this.callAddStock = this.callAddStock.bind(this);
     }
 
     componentDidMount() {
-        // let url = baseUrl + "&function=TIME_SERIES_INTRADAY&interval=5min&symbol=" + encodeURI(this.props.symbol);
-        // let url = baseUrl + "&function=GLOBAL_QUOTE&symbol=" + encodeURI(this.props.symbol);
-        /*let url = baseUrl + "stock/market/batch?types=quote&symbols=" + encodeURI(this.props.symbol);
-        let url_logo = baseUrl + "stock/" + encodeURI(this.props.symbol) + "/logo";*/
-
         let url = uriQuote(this.props.symbol);
         let url_logo = uriLogo(this.props.symbol);
 
@@ -471,9 +595,11 @@ class Stock extends Component {
         } else {
             price = this.state.price
         }
+        const isSelected = this.props.selected;
         if (this.state.isLoaded && this.state.logoLoaded && this.props.currencyRate > 0) {
             elementLoaded =
-                <tr>
+                <tr className={isSelected ? "selected" : ""}
+                    onClick={this.props.changeSelectState.bind(this, this.props.symbol)}>
                     <th scope="row"><Logo src={this.state.logo}/>{this.props.symbol}</th>
                     <td>{new Intl.NumberFormat('fi-FI', {
                         style: 'currency',
@@ -504,15 +630,7 @@ class Stock extends Component {
         );
     }
 }
-/*
-class Chart extends Component {
-    render() {
-        return (
 
-        );
-    }
-}
-*/
 class Switch extends Component {
     constructor(props) {
         super(props);
