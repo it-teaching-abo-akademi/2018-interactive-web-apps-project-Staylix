@@ -1,10 +1,6 @@
 import React, {Component} from 'react';
-import logo from './logo.svg';
-//import LineChart from 'react-chartjs';
-//import BarChart from 'react-chartjs';
-import {Bar, Line} from 'react-chartjs-2';
-//var BarChart = require("react-chartjs").Bar;
-//var BarChart = require("react-chartjs").Bar;
+import {Line} from 'react-chartjs-2';
+
 
 /* This part manage URLs for requests */
 const apiKeyCurrency = "0ZHUEM2KZK605UBO";
@@ -19,13 +15,15 @@ function uriQuote(symbol) {
 
 function uriChart(symbolList, range) {
     let symbols = "";
+    const intervalByRange = {"1d": "4", "1m": "1", "3m": "2", "6m": "3", "ytd": "4", "1y": "6", "2y": "9", "5y": "16"};
+    let interval = intervalByRange[range];
     for (let i = 0; i < symbolList.length; i++) {
         if (i > 0)
             symbols += ',';
         symbols += symbolList[i].symbol;
     }
     let url = baseUrl + "stock/market/batch?types=chart&symbols=" + encodeURI(symbols);
-    return url + "&range=" + range + "&chartInterval=1";
+    return url + "&range=" + range + "&chartInterval=" + interval;
 }
 
 function uriLogo(symbol) {
@@ -119,18 +117,22 @@ class DoubleInputForm extends Component {
     render() {
         return (
             <div>
-                <form onSubmit={this.handleSubmit} className="form-inline m-3">
-                    <div className="form-group">
-                        <label htmlFor="id_input">{this.props.labels[0]}</label>
-                        <input name="value1" type={this.props.types[0]} className="form-control"
-                               value={this.state.value1}
-                               onChange={this.handleChange}/>
+                <form onSubmit={this.handleSubmit} className="my-3">
+                    <div className="form-group row">
+                        <label htmlFor="value1" className="col-md-3 col-form-label">{this.props.labels[0]}</label>
+                        <div className="col-md-9">
+                            <input id="value1" name="value1" type={this.props.types[0]} className="form-control"
+                                   value={this.state.value1}
+                                   onChange={this.handleChange}/>
+                        </div>
                     </div>
-                    <div className="form-group ml-2">
-                        <label htmlFor="id_input">{this.props.labels[1]}</label>
-                        <input name="value2" type={this.props.types[0]} className="form-control"
+                    <div className="form-group row">
+                        <label htmlFor="value2" className="col-md-3 col-form-label">{this.props.labels[1]}</label>
+                        <div className="col-md-9">
+                            <input id="value2" name="value2" type={this.props.types[0]} className="form-control"
                                value={this.state.value2}
                                onChange={this.handleChange}/>
+                        </div>
                     </div>
                     <Button classes={this.props.buttonClass} content={this.props.buttonContent}
                             icon={"add_circle_outline"}
@@ -165,6 +167,7 @@ class PortfolioList extends Component {
         this.changeSelectState = this.changeSelectState.bind(this);
         this.showChart = this.showChart.bind(this);
         this.hideModal = this.hideModal.bind(this);
+        this.changeRange = this.changeRange.bind(this);
     }
 
     addPortfolio(name) {
@@ -284,7 +287,9 @@ class PortfolioList extends Component {
     }
 
     // To show the modal with the chart
-    showChart(portfolioName) {
+    showChart(portfolioName, range = null) {
+        if (typeof range === "object")
+            range = this.state.range;
         let stocks = this.state.portfolios[portfolioName].stocks.filter(stock => stock.selected);
         if (stocks.length < 1) {
             alert("Select at least one stock.");
@@ -293,10 +298,11 @@ class PortfolioList extends Component {
         this.setState({
             showChart: true,
             stocksChart: stocks,
+            lastPortfolio: portfolioName
         });
         let labels = [];
         let datasets = [];
-        let url = uriChart(stocks, this.state.range);
+        let url = uriChart(stocks, range);
         fetch(url)
             .then(res => res.json())
             .then(
@@ -337,9 +343,15 @@ class PortfolioList extends Component {
             );
     }
 
-// To hide the modal
+    // To hide the modal
     hideModal() {
         this.setState({showChart: false})
+    }
+
+    // To change the range of the chart (called from the switcher in the modal)
+    changeRange(range) {
+        this.setState({range: range});
+        this.showChart(this.state.lastPortfolio, range);
     }
 
     componentDidMount() {
@@ -388,21 +400,31 @@ class PortfolioList extends Component {
                        changeSelectState={this.changeSelectState}
                        showChart={this.showChart}
             />);
-        let leftPortfolios = [];
-        let rightPortfolios = [];
-        for (let i = 0; i < listPortfolios.length; ++i) {
-            if (i % 2 === 0)
-                leftPortfolios.unshift(listPortfolios[i]);
-            else
-                rightPortfolios.unshift(listPortfolios[i]);
+        if (listPortfolios.length > 1) {
+            let leftPortfolios = [];
+            let rightPortfolios = [];
+            for (let i = 0; i < listPortfolios.length; ++i) {
+                if (i % 2 === 0)
+                    leftPortfolios.unshift(listPortfolios[i]);
+                else
+                    rightPortfolios.unshift(listPortfolios[i]);
+            }
+            listPortfolios =
+                <div className="row">
+                    <div className="col-12 col-lg-6 px-3">
+                        {leftPortfolios}
+                    </div>
+                    <div className="col-12 col-lg-6 px-3">
+                        {rightPortfolios}
+                    </div>
+                </div>;
         }
-        console.log(this.state.datasetsChart);
         return (
             <div>
                 <div className="centered">
                     <h1 className="mt-3">Your Portfolios</h1>
                     <SingleInputForm onSubmit={this.addPortfolio}
-                                     label={"Portfolio Name:"}
+                                     label={"Portfolio Name"}
                                      buttonContent={"Add new Portfolio"}
                                      buttonClass={"myBtn-dark"}/>
                 </div>
@@ -410,14 +432,12 @@ class PortfolioList extends Component {
                        labels={this.state.labelsChart}
                        datasets={this.state.datasetsChart}
                        shown={this.state.showChart}
+                       changeRange={this.changeRange}
+                       range={this.state.range}
                 />
-                <div className="row mt-4">
-                    <div className="col-12 col-lg-6 px-3">
-                        {leftPortfolios}
-                    </div>
-                    <div className="col-12 col-lg-6 px-3">
-                        {rightPortfolios}
-                    </div>
+
+                <div className="mt-4">
+                    {listPortfolios}
                 </div>
             </div>
         );
@@ -472,7 +492,7 @@ class Portfolio extends Component {
                 </div>
                 <DoubleInputForm onSubmit={this.callAddStock}
                                  types={["text", "number"]}
-                                 labels={["Stock Symbol:", "Number of shares:"]}
+                                 labels={["Stock Symbol", "Number of shares"]}
                                  buttonContent={"Add stock"}
                                  buttonClass={"myBtn-light"}/>
 
@@ -502,17 +522,29 @@ class Portfolio extends Component {
 
 class Modal extends Component {
     render() {
+        const texts = ["1d", "1m", "3m", "6m", "ytd", "1y", "2y", "5y"];
+        const titles = ["One day", "One month", "Three months", "Six months", "Year-to-date", "One year", "Two years", "Five years"];
+
         let data = {
             labels: this.props.labels,
             datasets: this.props.datasets
         };
-        console.log(data);
         let options = {}; //{scales: {yAxes: [{ticks: {beginAtZero: true}}]}};
         return (
             <div className={this.props.shown ? "modal" : "modal hide"}>
                 <div className="modal-content">
-                    <i className="material-icons" onClick={this.props.hideModal}>cancel</i>
+                    <div>
+                        <i className="material-icons" onClick={this.props.hideModal}>cancel</i>
+                    </div>
                     <Line data={data} options={options}/>
+                    <div className="centered">
+                        <SwitchMultiple
+                            texts={texts}
+                            titles={titles}
+                            changeSelected={this.props.changeRange}
+                            selectedText={this.props.range}
+                        />
+                    </div>
                 </div>
             </div>
         );
@@ -663,21 +695,73 @@ class Switch extends Component {
     }
 }
 
+class SwitchMultiple extends Component {
+    render() {
+        let className;
+        let buttons = [];
+        for (let i = 0; i < this.props.texts.length; i++) {
+            if (this.props.selectedText === this.props.texts[i])
+                className = "switchActive";
+            else
+                className = "switchDisabled";
+            buttons.push(
+                <SwitchItem
+                    key={this.props.texts[i]}
+                    text={this.props.texts[i]}
+                    className={className}
+                    icon={this.props.icons !== undefined ? this.props.icons[i] : null}
+                    title={this.props.titles !== undefined ? this.props.titles[i] : null}
+                    clickHandler={this.props.changeSelected}
+                />
+            )
+        }
+        return (
+            <div className="switch-multiple mt-3">
+                {buttons}
+            </div>
+        );
+    }
+}
+
+class SwitchItem extends Component {
+    render() {
+        let content;
+        if (this.props.icon === null)
+            content = this.props.text;
+        else
+            content = <i className="material-icons">this.props.icon</i>;
+        return (
+            <div
+                {...(this.props.title !== null ? {title: this.props.title} : {})}
+                className={this.props.className}
+                onClick={this.props.clickHandler.bind(this, this.props.text)}
+            >
+                {content}
+            </div>
+        );
+    }
+}
+
 class App extends Component {
     render() {
         return (
             <div className="App">
-                <header className="header">
+{/*                <header className="header">
                     <img src={logo} className="App-logo" alt="logo"/>
                     <p>
                         Welcome on the <span className="accentuated">Stock Portfolio Management System</span>.
                     </p>
-                </header>
+
+                </header>*/}
+                <div className="parallax">
+                    <a href="#main"><i className="material-icons">expand_more</i></a>
+                </div>
                 <main>
-                    <div className="container">
+                    <div className="container" id="main">
                         <PortfolioList/>
                     </div>
                 </main>
+
                 <footer className="footer">
                     Data provided for free by <a href="https://iextrading.com/developer">IEX</a>. View <a
                     href="https://iextrading.com/api-exhibit-a/">IEX’s Terms of Use</a>.

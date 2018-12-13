@@ -8,6 +8,12 @@ body {
     -moz-osx-font-smoothing: grayscale;
 }
 
+html, body, .App, #root {
+    width: 100%;
+    height: 100%;
+    scroll-behavior: smooth;
+}
+
 code {
     font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
     monospace;
@@ -48,12 +54,12 @@ code {
     justify-content: center;
     font-size: calc(10px + 2vmin);
     color: white;
-    padding: 20px;
 }
 
 .footer {
     .header;
     margin-top: 80px;
+    padding: 20px 0;
 }
 
 .myBtn {
@@ -78,6 +84,11 @@ code {
         left: 6%;
         box-sizing: border-box;
         display: inline-block;
+    }
+
+    &:hover {
+        cursor: pointer;
+        transform: scale(1.05);
     }
 }
 
@@ -118,6 +129,13 @@ code {
     color: @dark_text;
     border-radius: 22px;
     padding: 40px;
+    box-shadow: 0 1px 10px rgba(0,0,0,0.32);
+    transition: all 0.3s cubic-bezier(.25,.8,.25,1);
+
+    &:hover {
+        box-shadow: 0 6px 38px rgba(0,0,0,0.55), 0 4px 20px rgba(0,0,0,0.52);
+        transform: translateY(-8px) scale(1.001);
+    }
 }
 
 table {
@@ -125,11 +143,13 @@ table {
         tr {
             &:hover {
                 background-color: @accent;
+                cursor: pointer;
             }
         }
 
         .selected {
             background-color: @accent_selected;
+
             &:hover {
                 background-color: @accent_dark;
             }
@@ -144,6 +164,7 @@ table {
     height: 40px;
     transition-duration: 0.4s;
     transition-timing-function: ease-out;
+    max-width: 200px;
 
     &:focus {
         -webkit-box-shadow: none;
@@ -153,7 +174,6 @@ table {
 }
 
 label {
-    margin-right: 5px;
 }
 
 a {
@@ -177,7 +197,6 @@ input:-webkit-autofill {
 }
 
 /* CSS for the modal */
-/* The Modal (background) */
 .modal {
     display: block; /* Hidden by default */
     position: fixed; /* Stay in place */
@@ -187,29 +206,32 @@ input:-webkit-autofill {
     width: 100%; /* Full width */
     height: 100%; /* Full height */
     overflow: auto; /* Enable scroll if needed */
-    background-color: rgb(0,0,0); /* Fallback color */
-    background-color: rgba(0,0,0,0.6); /* Black w/ opacity */
+    background-color: rgb(0, 0, 0); /* Fallback color */
+    background-color: rgba(0, 0, 0, 0.6); /* Black w/ opacity */
+
     /* Modal Content */
     .modal-content {
-        background-color: #fefefe;
+        background-color: @light_background;
         margin: auto; /* 15% from the top and centered */
-        top: 2%;
         padding: 20px;
-        border: 1px solid #888;
+        border-radius: 18px;
         width: 80%; /* Could be more or less, depending on screen size */
-    }
+        height: 100%;
 
-    /* The Close Button */
-    i {
-        color: @accent;
-        float: right;
-        font-size: 40px;
-        font-weight: bold;
-    }
-    i:hover,
-    i:focus {
-        color: @accent_dark;
-        cursor: pointer;
+        /* The Close Button */
+        i {
+            color: @accent;
+            float: right;
+            font-size: 40px;
+            font-weight: bold;
+            animation: App-logo-spin infinite 2s linear;
+
+        }
+        i:hover,
+        i:focus {
+            color: @accent_dark;
+            cursor: pointer;
+        }
     }
 }
 
@@ -221,7 +243,8 @@ input:-webkit-autofill {
 /* CSS for the switch button */
 .switch {
     height: 40px;
-    width: 80px;
+    width: content-box;
+    display: inline-block;
     border-radius: 30px;
     background-color: @light_background;
     border: 3px solid @light_background;
@@ -234,11 +257,12 @@ input:-webkit-autofill {
     &:hover {
         cursor: pointer;
         border: 3px solid @accent;
+        transform: scale(1.1);
     }
 
     .switchItem {
         display: inline-block;
-        width: 50%;
+        width: 40px;
         height: 100%;
         padding-top: 5px;
     }
@@ -253,6 +277,46 @@ input:-webkit-autofill {
         animation: switchDisabling 0.6s forwards;
     }
 }
+
+.switch-multiple {
+    height: 40px;
+    width: content-box;
+    display: inline-block;
+    border-radius: 30px;
+    background-color: @light_background;
+    border: 3px solid @accent;
+    text-align: center;
+    align-items: center;
+    overflow: hidden;
+    transition-duration: 0.35s;
+
+    .switchItem {
+        display: inline-block;
+        width: 40px;
+        height: 100%;
+        padding-top: 5px;
+        transition-duration: 0.55s;
+
+        &:hover {
+            cursor: pointer;
+            background-color: @accent_selected;
+            color: @light_background;
+        }
+    }
+
+    .switchActive {
+        .switchItem;
+        background-color: @accent;
+        color: @light_background;
+    }
+
+    .switchDisabled {
+        .switchItem;
+        background-color: @light_background;
+        color: @accent;
+    }
+}
+
 
 @keyframes switchActivation {
     from {
@@ -275,6 +339,34 @@ input:-webkit-autofill {
         color: @accent;
     }
 }
+
+/* CSS for parallax header background */
+.parallax {
+    /* The image used */
+    background-image: url("./header.png");
+
+    /* Set a specific height */
+    height: 100%;
+
+    /* Create the parallax scrolling effect */
+    background-attachment: fixed;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+
+    text-align: center;
+
+    a {
+        position: absolute;
+        bottom: 0;
+        transform: translateX(-50px);
+    }
+    i {
+        font-size: 100px;
+        color: @accent;
+    }
+}
+
 
 
 /* Thanks to loading.io. This code comes from an open source library: https://loading.io/css/ */
