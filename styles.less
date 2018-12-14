@@ -48,7 +48,11 @@ code {
 
 
 .header {
-    background-color: #282c34;
+    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(20px);
+    background-color: rgba(255,255,255,.3);
+
+    padding: 30px 0;
     text-align: center;
     align-items: center;
     justify-content: center;
@@ -58,6 +62,7 @@ code {
 
 .footer {
     .header;
+    background-color: @dark_background;
     margin-top: 80px;
     padding: 20px 0;
 }
@@ -171,9 +176,6 @@ table {
         box-shadow: 2px @accent;
         border: 2px solid @accent;
     }
-}
-
-label {
 }
 
 a {
