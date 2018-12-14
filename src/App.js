@@ -81,8 +81,8 @@ class SingleInputForm extends Component {
             <div>
                 <form onSubmit={this.handleSubmit} className="form-inline">
                     <div className="form-group">
-                        <label htmlFor="id_input">{this.props.label}</label>
-                        <input id="id_input" type="text" className="form-control" value={this.state.value}
+                        <label htmlFor="id_input" className="mr-2">{this.props.label}</label>
+                        <input id="id_input" type="text" className="form-control mr-2" value={this.state.value}
                                onChange={this.handleChange}/>
                     </div>
                     <Button classes={this.props.buttonClass} content={this.props.buttonContent}
@@ -193,7 +193,7 @@ class PortfolioList extends Component {
     addStock(portfolioName, stock) {
         stock.symbol = stock.symbol.toUpperCase();
         let portfolios = this.state.portfolios;
-        if (stock.symbol.length < 1) // TODO: Which sizes allowed?
+        if (stock.symbol.length < 1)
             alert('Please give the stock symbol.');
         else if (stock.shares < 1)
             alert('Please add at least 1 share.');
@@ -755,7 +755,11 @@ class App extends Component {
                 </header>*/}
                 <div className="parallax">
                     <a href="#main"><i className="material-icons">expand_more</i></a>
+                    <header className="header">
+                        <h1>Welcome on the <span className="accentuated">Stock Portfolio Management System</span>.</h1>
+                    </header>
                 </div>
+
                 <main>
                     <div className="container" id="main">
                         <PortfolioList/>
