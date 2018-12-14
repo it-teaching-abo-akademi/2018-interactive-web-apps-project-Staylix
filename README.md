@@ -1,50 +1,24 @@
 # SPMS
 
-Ceci est le nouveau git
+###	Grégoire Gentil
+###	74674 (1801498)
 
+###	GitHub source code (on the master branch):
 
+https://github.com/it-teaching-abo-akademi/2018-interactive-web-apps-project-Staylix 
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+###	GitHub page (from the gh-branch publishing branch):
+The page is from my personal GitHub, because, I don’t know why, the page on the GitHub class imported from this one doesn’t work. I think it is because of some settings from the npm run deploy.
 
-## Available Scripts
+https://staylix.github.io/spms2/ 
 
-In the project directory, you can run:
+###	Comments
 
-### `npm start`
+For this project, I have used some libraries:
 
-Runs the app in the development mode.<br>
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
-
-The page will reload if you make edits.<br>
-You will also see any lint errors in the console.
-
-### `npm test`
-
-Launches the test runner in the interactive watch mode.<br>
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
-
-### `npm run build`
-
-Builds the app for production to the `build` folder.<br>
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.<br>
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
-
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (Webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
+-	Bootstrap CSS: 	Just for a small part of my tags, and for the grid system.
+-	react-chartjs-2: 	To plot the chart.
+-	Material icon:	For the icons in buttons.
+-	Less: 		To manage my CSS. It is a long time that I would like to try this kind of framework to easily manage my CSS, I it was the great opportunity.
+-	I have also use code from loading.io for the animated icon that appear when the data are loading.
+-	I have also taken some inspiration on w3school for my modal and my parallax image.
